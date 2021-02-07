@@ -1,0 +1,62 @@
+<div class="section">
+    <div class="left">
+        <%= form_with model:@map do |f| %>
+            <%= f.label :address , "住所"%>
+            <%= f.text_field :address %>
+            <%= f.submit "投稿する" %>
+        <% end %>
+
+        <h3>投稿一覧</h3>
+        <% @maps.each do |m| %>
+            <div class="map">
+                <%= m.address %>
+            </div>
+            <%= button_to "削除する",map_path(m.id), method: :delete %>
+        <% end %>
+    </div>
+
+    <div id="map"></div>
+</div>
+
+
+<script>
+    let map;
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center:{lat: 35.68123620000001, lng:139.7671248},
+                zoom: 12,
+            });
+            <% @maps.each do |m| %>
+                <% results = Geocoder.search(m.address) %>
+                <% if results.present? %>
+                    <% @latlng = results.first.coordinates %>
+                    // ここから
+                    (function() {
+                        let marker = new google.maps.Marker({
+                            position:{lat: <%= @latlng[0] %>, lng: <%= @latlng[1] %>},
+                            map: map
+                        });
+                    })();
+                    // ここまで
+                <% end %>
+            <% end %>
+        }
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= ENV['GOOGLEMAPS_API_KEY'] %>&callback=initMap" async defer>
+</script>
+
+<style>
+    #map{
+        width: 400px;
+        height: 400px;
+        margin-left: 150px;
+    }
+    .section{
+        display: flex;
+    }
+    .map{
+        border-bottom: 1px solid black;
+        margin-top: 20px;
+    }
+</style>
